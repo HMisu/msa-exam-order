@@ -1,0 +1,27 @@
+server:
+  port: 19092
+spring:
+  profiles:
+    active: dev
+  application:
+    name: order-service
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+message: "default message"
