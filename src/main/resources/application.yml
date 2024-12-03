@@ -12,6 +12,24 @@ spring:
       discovery:
         enabled: true
         service-id: config-server
+    loadbalancer:
+      ribbon:
+        enabled: true
+    ribbon:
+      product-service:
+        listOfServers: "localhost:19093,localhost:19094"
+        NIWSServerListClassName: "com.netflix.loadbalancer.ConfigurationBasedServerList"
+        weightedList:
+          - server: "localhost:19093"
+            weight: 70
+          - server: "localhost:19094"
+            weight: 30
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
 
 management:
   endpoints:
@@ -31,4 +49,3 @@ eureka:
       defaultZone: http://localhost:19090/eureka/
 
 message: "default message"
-
