@@ -7,7 +7,9 @@ import com.sparta.msa_exam.order.dto.OrderResponseDto;
 import com.sparta.msa_exam.order.dto.OrderSearchDto;
 import com.sparta.msa_exam.order.entity.Order;
 import com.sparta.msa_exam.order.enums.OrderStatus;
+import com.sparta.msa_exam.order.exception.ProductServiceUnavailableException;
 import com.sparta.msa_exam.order.repository.OrderRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -39,7 +41,12 @@ public class OrderService {
         }
 
         for (Long productId : requestDto.getOrderItemIds()) {
-            productClient.reduceProductQuantity(productId, 1);
+            try {
+                productClient.reduceProductQuantity(productId, 1);
+            } catch (Exception e) {
+                log.error("Failed to reduce product quantity for product ID {}: {}", productId, e.getMessage());
+                throw new ProductServiceUnavailableException("잠시 후에 주문 추가를 요청 해주세요.");
+            }
         }
 
         Order order = Order.builder()
@@ -51,6 +58,22 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         return toResponseDto(savedOrder);
+    }
+
+    @CircuitBreaker(name = "orderService", fallbackMethod = "fallbackGetProductDetails")
+    public OrderResponseDto createOrderFailCase(OrderRequestDto orderRequestDto, boolean isFail) {
+        if (isFail) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
+        }
+
+        return new OrderResponseDto(
+                orderRequestDto.getStatus(),
+                orderRequestDto.getOrderItemIds()
+        );
+    }
+
+    public OrderResponseDto fallbackGetProductDetails(OrderRequestDto orderRequestDto, boolean isFail, Throwable t) {
+        throw new ProductServiceUnavailableException("잠시 후에 주문 추가를 요청 해주세요.");
     }
 
     @Cacheable(value = "orderSearchCache", keyGenerator = "customCacheKeyGenerator")

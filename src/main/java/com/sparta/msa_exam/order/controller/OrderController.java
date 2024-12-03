@@ -24,9 +24,12 @@ public class OrderController {
 
     @PostMapping
     public OrderResponseDto createOrder(@RequestBody OrderRequestDto orderRequestDto,
+                                        @RequestParam(value = "fail", required = false) Boolean isFail,
                                         @RequestHeader(value = "X-User-Id", required = true) String userId,
                                         @RequestHeader(value = "X-Role", required = true) String role) {
-
+        if (isFail != null && isFail) {
+            return orderService.createOrderFailCase(orderRequestDto, true);
+        }
         return orderService.createOrder(orderRequestDto, userId);
     }
 

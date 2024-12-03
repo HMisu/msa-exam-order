@@ -32,4 +32,9 @@ public class OrderResponseDto implements Serializable {
     private LocalDateTime updatedAt;
     private String updatedBy;
     private List<Long> orderItemIds;
+
+    public OrderResponseDto(String status, List<Long> orderItemIds) {
+        this.status = status;
+        this.orderItemIds = orderItemIds;
+    }
 }
