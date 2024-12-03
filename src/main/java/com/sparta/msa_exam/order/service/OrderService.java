@@ -71,8 +71,13 @@ public class OrderService {
     })
     @Transactional
     public OrderResponseDto updateOrder(Long orderId, Long productId, String userId) {
+        ProductResponseDto product = productClient.getProduct(productId);
+        if (product.getQuantity() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product with ID " + productId + " is out of stock.");
+        }
+
         Order order = findOrderById(orderId);
-        order.getOrderItemIds().add(productId);
+        order.updateOrder(productId, userId);
         Order updatedOrder = orderRepository.save(order);
         return toResponseDto(updatedOrder);
     }

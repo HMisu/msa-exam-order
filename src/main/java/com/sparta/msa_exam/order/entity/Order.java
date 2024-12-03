@@ -51,10 +51,9 @@ public class Order {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateOrder(List<Long> orderItemIds, String updatedBy, OrderStatus status) {
-        this.orderItemIds = orderItemIds;
+    public void updateOrder(Long productId, String updatedBy) {
+        this.orderItemIds.add(productId);
         this.updatedBy = updatedBy;
-        this.status = status;
         this.updatedAt = LocalDateTime.now();
     }
 
